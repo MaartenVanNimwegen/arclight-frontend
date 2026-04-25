@@ -2,10 +2,11 @@ import { Routes, Route, Link } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import ArticleDetail from "./pages/Article";
+import { useAuth } from "./context/AuthContext";
 
 function App() {
-  const userJson = localStorage.getItem("user");
-  const user = userJson ? JSON.parse(userJson) : null;
+  const { isLoggedIn, user, logout } = useAuth();
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
@@ -14,20 +15,17 @@ function App() {
           Arclight
         </Link>
         <div>
-          {user ? (
+          {isLoggedIn ? (
             <div className="flex gap-4 items-center">
-              <span>Welkom, {user.userName}</span>
-              {user.role !== "Lezer" && (
+              <span className="text-sm font-medium">Welkom, {user?.given_name}</span>
+              {user?.role !== "User" && (
                 <Link to="/admin" className="text-blue-600 underline">
                   Dashboard
                 </Link>
               )}
               <button
-                onClick={() => {
-                  localStorage.clear();
-                  window.location.reload();
-                }}
-                className="text-sm"
+                onClick={logout}
+                className="text-sm bg-gray-100 px-3 py-1 rounded hover:bg-gray-200 transition"
               >
                 Uitloggen
               </button>
@@ -35,7 +33,7 @@ function App() {
           ) : (
             <Link
               to="/login"
-              className="bg-blue-600 text-white px-4 py-2 rounded"
+              className="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition"
             >
               Inloggen
             </Link>
@@ -48,6 +46,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/admin" element={<Dashboard />} />
+          <Route path="/article/:slug" element={<ArticleDetail />} />
         </Routes>
       </main>
     </div>

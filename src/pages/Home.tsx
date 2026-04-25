@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { articleService } from "../services/articleService";
 import type { Article } from "../types/article";
+import { Link } from "react-router-dom";
 
 export default function Home() {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -44,9 +45,12 @@ export default function Home() {
                 {article.summary}
               </p>
               <div className="mt-auto pt-6">
-                <button className="text-sm font-semibold text-blue-600 flex items-center gap-1 group-hover:gap-2 transition-all">
-                  Lees meer <span>&rarr;</span>
-                </button>
+                <Link
+                  to={`/article/${article.slug}`}
+                  className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  Lees volledige artikel →
+                </Link>
               </div>
             </div>
           </article>

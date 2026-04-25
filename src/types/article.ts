@@ -8,9 +8,8 @@ export interface Article {
   content: string;
   publishedAt: string | null;
 
-  categoryName?: string;
-  categoryId: string;
-  authorName?: string;
+  authorName: string;
+  categoryName: string;
 }
 
 /**
@@ -19,8 +18,8 @@ export interface Article {
  */
 export interface UpsertArticle {
   title: string;
-  slug: string;
   summary: string;
   content: string;
   categoryId: string;
+  publishNow: boolean;
 }
