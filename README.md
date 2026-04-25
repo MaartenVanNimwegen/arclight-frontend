@@ -34,7 +34,3 @@ Dit is de Single Page Application (SPA) voor het Arclight-platform. Het doel is 
    `npm install`
 3. Start de applicatie:
    `npm start`
-
----
-
-_Onderdeel van de Web Development Showcase Arclight (2025-2026)._
