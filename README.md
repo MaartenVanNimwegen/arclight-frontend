@@ -1,75 +1,40 @@
-# React + TypeScript + Vite
+# Arclight - Frontend (React)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Arclight is een modern, krachtig blogsysteem ontworpen als een centraal platform voor **owned media**. Dit frontend-project vormt de interactieve interface voor zowel content creators als lezers.
 
-Currently, two official plugins are available:
+## 1. Projectoverzicht
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Dit is de Single Page Application (SPA) voor het Arclight-platform. Het doel is om een vloeiende, app-achtige ervaring te bieden die de drempel om content te schrijven en te consumeren minimaliseert.
 
-## React Compiler
+### Kernfunctionaliteiten
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+- **Content Beheer (Dashboard):** Een intuïtieve interface voor de creator om artikelen te schrijven (CRUD), categoriseren en publiceren.
+- **Lezersomgeving:** Een dynamische omgeving waar bezoekers artikelen kunnen lezen, zoeken en filteren op categorie (bijv. Tech, Natuur, Lifestyle).
+- **Interactie:** Mogelijkheid voor ingelogde gebruikers om reacties te plaatsen.
+- **Nieuwsbrief:** Sectie voor bezoekers om zich in te schrijven voor updates.
 
-Note: This will impact Vite dev & build performances.
+## 2. Tech Stack
 
-## Expanding the ESLint configuration
+- **Framework:** React
+- **Styling:** Tailwind CSS (voor een moderne, responsieve UI)
+- **Data-afhandeling:** Communicatie met de .NET API via JSON
+- **Architectuur:** Single Page Application (SPA) voor optimale snelheid en gebruikerservaring.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 3. Requirements & Kwaliteit
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **NFR2:** De website moet binnen 2 seconden laden op een breedbandverbinding.
+- **Responsiveness:** Volledig toegankelijk op verschillende schermformaten.
+- **Authenticatie:** Rolgebaseerde toegang (Admin, Creator, Lezer).
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 4. Installatie
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1. Clone de repository:
+   `git clone https://github.com/MaartenVanNimwegen/arclight-frontend.git`
+2. Installeer afhankelijkheden:
+   `npm install`
+3. Start de applicatie:
+   `npm start`
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+_Onderdeel van de Web Development Showcase Arclight (2025-2026)._
