@@ -17,4 +17,14 @@ export const authService = {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
   },
+
+  register: async (data: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    password: string;
+  }) => {
+    const response = await client.post("/user/register", data);
+    return response.data;
+  },
 };

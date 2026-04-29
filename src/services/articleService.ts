@@ -1,14 +1,7 @@
 import client from "../api/client";
-import type { Article } from "../types/article";
+import type { Article, UpsertArticle } from "../types/article";
 
 const API_BASE_URL = "/articles";
-
-export interface CreateArticleDto {
-  title: string;
-  summary: string;
-  content: string;
-  categoryId: number;
-}
 
 export const articleService = {
   // Fetch all published articles from the API
@@ -22,21 +15,21 @@ export const articleService = {
     return response.data;
   },
 
-  create: async (articleData: CreateArticleDto): Promise<Article> => {
+  create: async (articleData: UpsertArticle): Promise<Article> => {
     const response = await client.post<Article>(`${API_BASE_URL}`, articleData);
     return response.data;
   },
   
-  update: async (id: number, articleData: CreateArticleDto): Promise<Article> => {
+  update: async (id: string, articleData: UpsertArticle): Promise<Article> => {
     const response = await client.put<Article>(`${API_BASE_URL}/${id}`, articleData);
     return response.data;
   },
 
-  publish: async (id: number): Promise<void> => {
+  publish: async (id: string): Promise<void> => {
     await client.patch(`${API_BASE_URL}/${id}/publish`);
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await client.delete(`${API_BASE_URL}/${id}`);
   },
 

@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         role: decoded.role,
       };
 
-      setUser(userData);    
+      setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
     } catch (error) {
       console.error("Token decoderen mislukt", error);
@@ -61,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("user");
     setUser(null);
     setIsLoggedIn(false);
+    window.location.href = "/login";
   };
 
   return (
