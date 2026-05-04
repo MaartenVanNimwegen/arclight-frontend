@@ -11,7 +11,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <ConfirmProvider>
         <AuthProvider>
-          <App />
+          <React.StrictMode>
+            <App />
+          </React.StrictMode>
         </AuthProvider>
       </ConfirmProvider>
     </BrowserRouter>

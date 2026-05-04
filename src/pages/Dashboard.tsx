@@ -349,7 +349,13 @@ function CategoriesTab() {
         await client.delete(`/categories/${id}`);
         await loadCats();
       } catch (err) {
-        alert("Kan niet wissen. Zorg dat de categorie leeg is.");
+        await confirm({
+          title: "Foutmelding",
+          message:
+            "Deze categorie heeft nog artikelen gekoppeld en kan daarom niet verwijderd worden. Je zult eerst die artikelen moeten aanpassen of verwijderen.",
+          confirmText: "Oké, begrepen",
+          isDanger: false,
+        });
       }
     }
   };
@@ -417,23 +423,144 @@ function CategoriesTab() {
 }
 
 // ==========================================
-// TAB 3: REACTIES (Voorbereiding)
+// TAB 3: REACTIE MODERATIE
 // ==========================================
 function CommentsTab() {
-  return (
-    <div className="bg-white p-16 rounded-3xl border border-slate-100 text-center shadow-sm">
-      <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
-        💬
+  const { confirm } = useConfirm();
+  const [comments, setComments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadComments();
+  }, []);
+
+  const loadComments = async () => {
+    try {
+      setLoading(true);
+      const res = await client.get("/admin/comments");
+      setComments(res.data);
+    } catch (err) {
+      console.error("Fout bij laden reacties:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    const isConfirmed = await confirm({
+      title: "Reactie verwijderen",
+      message:
+        "Weet je zeker dat je deze reactie wilt wissen? Dit kan niet ongedaan worden gemaakt.",
+      confirmText: "Verwijder Reactie",
+      isDanger: true,
+    });
+
+    if (isConfirmed) {
+      try {
+        await client.delete(`/admin/comments/${commentId}`);
+        await loadComments();
+      } catch (err) {
+        alert("Fout bij verwijderen reactie.");
+      }
+    }
+  };
+
+  const groupedComments = comments.reduce((acc: any, comment: any) => {
+    const title = comment.articleTitle || "Algemeen / Onbekend";
+    if (!acc[title]) acc[title] = [];
+    acc[title].push(comment);
+    return acc;
+  }, {});
+
+  if (loading)
+    return (
+      <div className="text-center py-20 text-slate-500 animate-pulse">
+        Reacties laden...
       </div>
-      <h3 className="text-2xl font-bold text-slate-800">Reactie Moderatie</h3>
-      <p className="text-slate-500 mt-3 max-w-md mx-auto leading-relaxed">
-        Hier komt een overzicht van alle reacties over het hele platform.
-        Wachtend op de{" "}
-        <code className="bg-slate-100 px-2 py-1 rounded font-mono text-sm">
-          GET /comments
-        </code>{" "}
-        route in je C# backend.
-      </p>
+    );
+
+  if (comments.length === 0) {
+    return (
+      <div className="bg-white p-16 rounded-3xl border border-slate-100 text-center shadow-sm">
+        <div className="w-20 h-20 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
+          💬
+        </div>
+        <h3 className="text-xl font-bold text-slate-800">Geen reacties</h3>
+        <p className="text-slate-500 mt-2">
+          Er zijn nog geen reacties geplaatst op je artikelen.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      {Object.keys(groupedComments).map((articleTitle) => (
+        <div
+          key={articleTitle}
+          className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden"
+        >
+          {/* Artikel Sectie Header */}
+          <div className="bg-slate-50/50 px-6 py-4 border-b border-slate-100">
+            <h3 className="font-bold text-slate-900 flex items-center gap-2">
+              <span className="text-blue-600 text-lg">📄</span>
+              {articleTitle}
+              <span className="ml-auto bg-white border border-slate-200 text-slate-500 text-[10px] px-2 py-1 rounded-lg uppercase tracking-wider font-black">
+                {groupedComments[articleTitle].length} reacties
+              </span>
+            </h3>
+          </div>
+
+          {/* Lijst met reacties voor dit artikel */}
+          <div className="divide-y divide-slate-50">
+            {groupedComments[articleTitle].map((c: any) => (
+              <div
+                key={c.id}
+                className="p-6 hover:bg-slate-50/30 transition-colors flex justify-between items-start gap-4"
+              >
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-bold text-sm text-slate-900">
+                      {c.userName || c.authorName}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-medium">
+                      •{" "}
+                      {new Date(c.createdAt).toLocaleDateString("nl-NL", {
+                        day: "numeric",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                  <p className="text-slate-600 text-sm leading-relaxed italic">
+                    "{c.text}"
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => handleDeleteComment(c.id)}
+                  className="shrink-0 text-red-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-xl transition-all"
+                  title="Verwijder reactie"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

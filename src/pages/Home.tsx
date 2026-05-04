@@ -52,6 +52,9 @@ export default function Home() {
                   Lees volledige artikel →
                 </Link>
               </div>
+              <div>
+                <span className="text-slate-500">Door: {article.authorName}</span>
+              </div>
             </div>
           </article>
         ))}
