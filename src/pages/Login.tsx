@@ -7,13 +7,11 @@ export default function Login() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Form fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
 
-  // Feedback states
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -21,7 +19,6 @@ export default function Login() {
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    // CRUCIAAL: Stop direct de browser refresh
     e.preventDefault();
 
     setErrorMessage("");
@@ -30,12 +27,12 @@ export default function Login() {
 
     try {
       if (isRegistering) {
-        // Registratie flow
+        // Register flow
         await authService.register({ email, firstName, lastName, password });
 
         setSuccessMessage("Account succesvol aangemaakt! Log hieronder in.");
         setIsRegistering(false);
-        setPassword(""); // Veiligheid: wis wachtwoord
+        setPassword("");
       } else {
         // Login flow
         const response = await authService.login(email, password);
@@ -48,7 +45,6 @@ export default function Login() {
     } catch (err: any) {
       console.error("Auth error:", err);
 
-      // Pak de foutmelding uit de API response of gebruik een fallback
       const errorDetail =
         err.response?.data?.message ||
         err.response?.data?.error ||
@@ -69,7 +65,6 @@ export default function Login() {
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-4 bg-slate-50/50">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl shadow-slate-200/60 border border-slate-100 p-8 transition-all duration-300">
-        {/* Header Section */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-200">
             <span className="text-3xl font-black italic">A</span>
@@ -84,11 +79,10 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Mooie Foutmelding */}
         {errorMessage && (
           <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="flex items-center">
-              <div className="flex-shrink-0 text-red-500 text-xl mr-3">
+              <div className="shrink-0 text-red-500 text-xl mr-3">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"
@@ -105,11 +99,10 @@ export default function Login() {
           </div>
         )}
 
-        {/* Succesmelding */}
         {successMessage && (
           <div className="mb-6 bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="flex items-center">
-              <div className="flex-shrink-0 text-emerald-500 text-xl mr-3">
+              <div className="shrink-0 text-emerald-500 text-xl mr-3">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"
@@ -200,7 +193,6 @@ export default function Login() {
           </button>
         </form>
 
-        {/* Footer Toggle */}
         <div className="mt-8 text-center pt-6 border-t border-slate-50">
           <p className="text-slate-500 font-medium">
             {isRegistering ? "Al bekend bij ons?" : "Nog geen lid?"}{" "}

@@ -15,15 +15,14 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
     null,
-  ); // null = Alle categorieën
+  );
 
   useEffect(() => {
-    // Haal zowel artikelen als categorieën op
     articleService.getAll().then(setArticles);
     client.get("/categories").then((res) => setCategories(res.data));
   }, []);
 
-  // De Filter Logica: Zoekterm + Categorie
+  // Filters articles based on search query and selected category
   const filteredArticles = articles.filter((article) => {
     const matchesSearch =
       article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -49,7 +48,6 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Zoekbalk */}
           <div className="relative w-full md:w-80">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg
@@ -76,7 +74,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Categorie Filter Sectie */}
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setSelectedCategoryId(null)}
@@ -104,7 +101,6 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Grid met resultaten */}
       {filteredArticles.length > 0 ? (
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {filteredArticles.map((article) => (
@@ -210,7 +206,7 @@ function NewsletterSignup() {
           Blijf op de hoogte
         </h2>
         <p className="text-slate-400 mb-10 text-lg">
-          Ontvang de wekelijkse Arclight Digest direct in je inbox.
+          Ontvang de wekelijkse Arclight Content direct in je inbox.
         </p>
 
         <form

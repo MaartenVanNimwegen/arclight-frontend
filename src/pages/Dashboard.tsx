@@ -1,22 +1,22 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useConfirm } from "../context/ConfirmContext"; // De nieuwe magische hook!
+import { useConfirm } from "../context/ConfirmContext";
 import { articleService } from "../services/articleService";
 import client from "../api/client";
 import type { Article } from "../types/article";
 
 // ==========================================
-// HOOFD COMPONENT
+// Main component
 // ==========================================
 export default function Dashboard() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("articles");
 
-  // Rechten bepalen op basis van de claim in je JWT
+  // Role rights based on JWT claims
   const isAdmin = user?.role === "Admin";
   const isContentCreator = user?.role === "ContentCreator" || isAdmin;
 
-  // Tabs definitie. We filteren tabs weg waar de gebruiker geen recht op heeft.
+  // Tabs definition. Filters on allowed roles to determine which tabs to show
   const tabs = [
     { id: "articles", label: "Artikelen", allowed: isContentCreator },
     { id: "categories", label: "Categorieën", allowed: isAdmin },
@@ -27,7 +27,6 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-7xl mx-auto py-10 px-4">
-      {/* Dashboard Header */}
       <div className="mb-10">
         <h1 className="text-4xl font-black text-slate-900">Arclight Studio</h1>
         <p className="text-slate-500 mt-1 flex items-center gap-2">
@@ -41,7 +40,6 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* Tab Navigatie */}
       <div className="flex gap-2 border-b border-slate-200 mb-8 overflow-x-auto">
         {tabs.map((tab) => (
           <button
@@ -58,7 +56,6 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Render de actieve tab */}
       <div className="animate-in fade-in duration-300">
         {activeTab === "articles" && <ArticlesTab />}
         {activeTab === "categories" && <CategoriesTab />}
@@ -71,7 +68,7 @@ export default function Dashboard() {
 }
 
 // ==========================================
-// TAB 1: ARTIKELEN
+// TAB 1: Articles
 // ==========================================
 function ArticlesTab() {
   const { confirm } = useConfirm();
@@ -215,7 +212,6 @@ function ArticlesTab() {
         />
       </section>
 
-      {/* Modal voor Artikel Maken/Bewerken */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-3xl p-8 w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in duration-200">
@@ -305,7 +301,7 @@ function ArticlesTab() {
 }
 
 // ==========================================
-// TAB 2: CATEGORIEËN
+// TAB 2: Categories
 // ==========================================
 function CategoriesTab() {
   const { confirm } = useConfirm();
@@ -425,7 +421,7 @@ function CategoriesTab() {
 }
 
 // ==========================================
-// TAB 3: REACTIE MODERATIE
+// TAB 3: COMMENTS MODERATION
 // ==========================================
 function CommentsTab() {
   const { confirm } = useConfirm();
@@ -502,7 +498,6 @@ function CommentsTab() {
           key={articleTitle}
           className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden"
         >
-          {/* Artikel Sectie Header */}
           <div className="bg-slate-50/50 px-6 py-4 border-b border-slate-100">
             <h3 className="font-bold text-slate-900 flex items-center gap-2">
               <span className="text-blue-600 text-lg">📄</span>
@@ -513,7 +508,6 @@ function CommentsTab() {
             </h3>
           </div>
 
-          {/* Lijst met reacties voor dit artikel */}
           <div className="divide-y divide-slate-50">
             {groupedComments[articleTitle].map((c: any) => (
               <div
@@ -683,7 +677,7 @@ function NewsletterTab() {
 }
 
 // ==========================================
-// TAB 5: GEBRUIKERSBEHEER
+// TAB 5: Users Management (Admin Only)
 // ==========================================
 function UsersTab() {
   const { user: currentUser } = useAuth();
@@ -851,7 +845,7 @@ function UsersTab() {
 }
 
 // ==========================================
-// HERBRUIKBARE GRID VOOR ARTIKELEN
+// Reusable component: Article Grid (used in Articles Tab for both Drafts and Published)
 // ==========================================
 function ArticleGrid({ articles, onEdit, onDelete, onPublish }: any) {
   if (articles.length === 0)

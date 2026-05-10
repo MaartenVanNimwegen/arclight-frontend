@@ -20,13 +20,11 @@ export default function Profile() {
     text: string;
   } | null>(null);
 
-  // Form states
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
 
   useEffect(() => {
     const fetchUser = async () => {
-      // Haal de ID uit de token (AuthContext)
       const userId = user?.nameid || user?.sub;
       if (!userId) return;
 
@@ -52,7 +50,6 @@ export default function Profile() {
 
     try {
       const userId = user?.nameid || user?.sub;
-      // LET OP: Je moet dit endpoint (/user/{id}) waarschijnlijk nog maken in je backend!
       await client.put(`/user/${userId}`, {
         firstName,
         lastName,
@@ -85,7 +82,6 @@ export default function Profile() {
     <div className="max-w-4xl mx-auto px-4 py-12">
       <div className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden">
         <div className="md:flex">
-          {/* Linker kant: Statistieken / Info */}
           <div className="md:w-1/3 bg-slate-900 p-8 text-white flex flex-col items-center justify-center text-center">
             <div className="w-24 h-24 bg-blue-600 rounded-3xl flex items-center justify-center text-3xl font-black mb-4 shadow-lg shadow-blue-500/20">
               {firstName[0]}
@@ -95,13 +91,8 @@ export default function Profile() {
               {firstName} {lastName}
             </h2>
             <p className="text-slate-400 text-sm mb-6">{userData?.email}</p>
-
-            <div className="inline-block px-4 py-1 bg-white/10 rounded-full text-[10px] font-black uppercase tracking-widest text-blue-400 border border-white/5">
-              Role: {user?.role || "Lid"}
-            </div>
           </div>
 
-          {/* Rechter kant: Het formulier */}
           <div className="md:w-2/3 p-8 md:p-12">
             <h1 className="text-2xl font-black text-slate-900 mb-2">
               Profiel instellingen

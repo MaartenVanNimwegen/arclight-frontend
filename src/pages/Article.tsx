@@ -33,10 +33,11 @@ export default function ArticleDetail() {
 
   const loadArticleAndComments = async () => {
     try {
+      // Get articles and set articles
       const art = await articleService.getBySlug(slug!);
       setArticle(art);
 
-      // Laad de comments voor dit artikel
+      // Get comments for the article and set comments
       const commentRes = await client.get(`/articles/${art.id}/comments`);
       setComments(commentRes.data);
     } catch (err) {
@@ -46,6 +47,7 @@ export default function ArticleDetail() {
     }
   };
 
+  // Handles new comment submission
   const handlePostComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim() || !article) return;
@@ -66,6 +68,7 @@ export default function ArticleDetail() {
     }
   };
 
+  // Handles comment deletion with confirmation
   const handleDeleteComment = async (commentId: string) => {
     const isConfirmed = await confirm({
       title: "Reactie verwijderen",
@@ -144,7 +147,7 @@ export default function ArticleDetail() {
           </span>
         </h2>
 
-        {/* Formulier: Alleen tonen als ingelogd */}
+        {/* Form: Only show if logged in */}
         {isLoggedIn ? (
           <form onSubmit={handlePostComment} className="space-y-4">
             <textarea
@@ -178,11 +181,10 @@ export default function ArticleDetail() {
           </div>
         )}
 
-        {/* Lijst met reacties */}
+        {/* List with comments */}
         <div className="space-y-6">
           {comments.length > 0 ? (
             comments.map((c) => {
-              // Check op userId (exact zoals in je DTO)
               const isOwner =
                 user?.nameid === c.userId || user?.sub === c.userId;
 
@@ -224,7 +226,6 @@ export default function ArticleDetail() {
                       </button>
                     )}
                   </div>
-                  {/* HIER WORDT DE TEKST GETOOND (c.text) */}
                   <p className="text-slate-700 leading-relaxed">{c.text}</p>
                 </div>
               );
