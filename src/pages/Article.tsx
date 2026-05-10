@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { articleService } from "../services/articleService";
-import { useAuth } from "../context/AuthContext";
-import { useConfirm } from "../context/ConfirmContext";
+import { useAuth } from "../context/useAuth";
+import { useConfirm } from "../context/useConfirm";
 import client from "../api/client";
 import type { Article } from "../types/article";
 
@@ -25,19 +25,14 @@ export default function ArticleDetail() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (slug) {
-      loadArticleAndComments();
+  const loadArticleAndComments = useCallback(async () => {
+    if (!slug) {
+      return;
     }
-  }, [slug]);
-
-  const loadArticleAndComments = async () => {
     try {
-      // Get articles and set articles
-      const art = await articleService.getBySlug(slug!);
+      const art = await articleService.getBySlug(slug);
       setArticle(art);
 
-      // Get comments for the article and set comments
       const commentRes = await client.get(`/articles/${art.id}/comments`);
       setComments(commentRes.data);
     } catch (err) {
@@ -45,7 +40,13 @@ export default function ArticleDetail() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug]);
+
+  useEffect(() => {
+    void (async () => {
+      await loadArticleAndComments();
+    })();
+  }, [loadArticleAndComments]);
 
   // Handles new comment submission
   const handlePostComment = async (e: React.FormEvent) => {
@@ -61,7 +62,7 @@ export default function ArticleDetail() {
       setNewComment("");
       const res = await client.get(`/articles/${article.id}/comments`);
       setComments(res.data);
-    } catch (err) {
+    } catch {
       alert("Reactie plaatsen mislukt.");
     } finally {
       setSubmitting(false);
@@ -81,7 +82,7 @@ export default function ArticleDetail() {
       try {
         await client.delete(`/articles/${article.id}/comments/${commentId}`);
         setComments(comments.filter((c) => c.id !== commentId));
-      } catch (err) {
+      } catch {
         alert("Verwijderen mislukt.");
       }
     }

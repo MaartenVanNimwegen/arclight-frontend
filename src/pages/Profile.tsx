@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import type { AxiosError } from "axios";
+import { useAuth } from "../context/useAuth";
 import client from "../api/client";
 
 interface UserData {
@@ -8,6 +9,10 @@ interface UserData {
   firstName: string;
   lastName: string;
   role: string | number;
+}
+
+interface ErrorResponse {
+  error?: string;
 }
 
 export default function Profile() {
@@ -59,11 +64,12 @@ export default function Profile() {
         type: "success",
         text: "Je profiel is succesvol bijgewerkt!",
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const axiosError = err as AxiosError<ErrorResponse>;
       setMessage({
         type: "error",
         text:
-          err.response?.data?.error ||
+          axiosError.response?.data?.error ||
           "Bijwerken mislukt. Controleer je backend.",
       });
     } finally {
