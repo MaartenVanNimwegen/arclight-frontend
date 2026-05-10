@@ -3,7 +3,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ArticleDetail from "./pages/Article";
-import { useAuth } from "./context/AuthContext";
+import { useAuth } from "./context/useAuth";
 import Profile from "./pages/Profile";
 
 function App() {
