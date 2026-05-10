@@ -21,6 +21,7 @@ export default function Dashboard() {
     { id: "articles", label: "Artikelen", allowed: isContentCreator },
     { id: "categories", label: "Categorieën", allowed: isAdmin },
     { id: "comments", label: "Reacties", allowed: isContentCreator },
+    { id: "newsletter", label: "Nieuwsbrief", allowed: isContentCreator },
     { id: "users", label: "Gebruikers", allowed: isAdmin },
   ].filter((tab) => tab.allowed);
 
@@ -62,6 +63,7 @@ export default function Dashboard() {
         {activeTab === "articles" && <ArticlesTab />}
         {activeTab === "categories" && <CategoriesTab />}
         {activeTab === "comments" && <CommentsTab />}
+        {activeTab === "newsletter" && <NewsletterTab />}
         {activeTab === "users" && <UsersTab />}
       </div>
     </div>
@@ -566,7 +568,122 @@ function CommentsTab() {
 }
 
 // ==========================================
-// TAB 4: GEBRUIKERSBEHEER
+// TAB 4: Newsletter
+// ==========================================
+function NewsletterTab() {
+  const { confirm } = useConfirm();
+  const [subject, setSubject] = useState("");
+  const [body, setBody] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<{
+    type: "success" | "error";
+    msg: string;
+  } | null>(null);
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const isConfirmed = await confirm({
+      title: "Nieuwsbrief versturen?",
+      message:
+        "Weet je dit zeker? Deze mail wordt direct verzonden naar alle abonnees. Dit kan niet worden geannuleerd.",
+      confirmText: "Ja, verstuur nu",
+      isDanger: true,
+    });
+
+    if (!isConfirmed) return;
+
+    setLoading(true);
+    setStatus(null);
+
+    try {
+      await client.post("/newsletter/send", { Subject: subject, Body: body });
+      setStatus({
+        type: "success",
+        msg: "De nieuwsbrief is succesvol verzonden!",
+      });
+      setSubject("");
+      setBody("");
+    } catch (err: any) {
+      setStatus({
+        type: "error",
+        msg:
+          "Fout bij verzenden: " + (err.response?.data?.error || "Serverfout"),
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8">
+        <div className="mb-8">
+          <h2 className="text-2xl font-black text-slate-900">
+            Verstuur Nieuwsbrief
+          </h2>
+          <p className="text-slate-500">
+            Stuur een update naar al je trouwe volgers.
+          </p>
+        </div>
+
+        {status && (
+          <div
+            className={`mb-8 p-4 rounded-xl font-bold ${
+              status.type === "success"
+                ? "bg-emerald-50 text-emerald-700"
+                : "bg-red-50 text-red-700"
+            }`}
+          >
+            {status.msg}
+          </div>
+        )}
+
+        <form onSubmit={handleSend} className="space-y-6">
+          <div>
+            <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">
+              Onderwerp
+            </label>
+            <input
+              type="text"
+              className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-blue-500 focus:bg-white outline-none transition-all font-bold text-slate-800"
+              placeholder="Bijv: Onze nieuwste artikelen van deze week"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">
+              Inhoud (HTML of Tekst)
+            </label>
+            <textarea
+              className="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-blue-500 focus:bg-white outline-none transition-all min-h-[300px] font-medium text-slate-700 leading-relaxed"
+              placeholder="Schrijf hier je bericht..."
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="flex justify-end pt-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-10 py-4 bg-slate-900 text-white rounded-2xl font-black shadow-xl shadow-slate-200 hover:bg-black transition-all active:scale-95 disabled:opacity-50"
+            >
+              {loading ? "Versturen..." : "Verstuur naar alle abonnees"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================
+// TAB 5: GEBRUIKERSBEHEER
 // ==========================================
 function UsersTab() {
   const { user: currentUser } = useAuth();

@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ArticleDetail from "./pages/Article";
 import { useAuth } from "./context/AuthContext";
+import Profile from "./pages/Profile";
 
 function App() {
   const { isLoggedIn, user, logout } = useAuth();
@@ -17,15 +18,26 @@ function App() {
         <div>
           {isLoggedIn ? (
             <div className="flex gap-4 items-center">
-              <span className="text-sm font-medium">Welkom, {user?.given_name}</span>
+              <span className="text-sm font-medium">
+                Welkom, {user?.given_name}
+              </span>
+              <Link
+                to="/profile"
+                className="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition"
+              >
+                Profiel
+              </Link>
               {user?.role !== "User" && (
-                <Link to="/admin" className="text-blue-600 underline">
+                <Link
+                  to="/admin"
+                  className="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition"
+                >
                   Dashboard
                 </Link>
               )}
               <button
                 onClick={logout}
-                className="text-sm bg-gray-100 px-3 py-1 rounded hover:bg-gray-200 transition"
+                className="bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition"
               >
                 Uitloggen
               </button>
@@ -47,6 +59,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/admin" element={<Dashboard />} />
           <Route path="/article/:slug" element={<ArticleDetail />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </main>
     </div>
