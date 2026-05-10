@@ -1,7 +1,13 @@
 import { useState } from "react";
+import type { AxiosError } from "axios";
 import { authService } from "../services/authService";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/useAuth";
+
+interface ErrorResponse {
+  message?: string;
+  error?: string;
+}
 
 export default function Login() {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -42,12 +48,13 @@ export default function Login() {
           navigate("/");
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Auth error:", err);
+      const axiosError = err as AxiosError<ErrorResponse>;
 
       const errorDetail =
-        err.response?.data?.message ||
-        err.response?.data?.error ||
+        axiosError.response?.data?.message ||
+        axiosError.response?.data?.error ||
         "Er is een onbekende fout opgetreden.";
 
       setErrorMessage(errorDetail);
