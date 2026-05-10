@@ -1,18 +1,5 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
-
-interface ConfirmOptions {
-  title: string;
-  message: string;
-  confirmText?: string;
-  isDanger?: boolean;
-}
-
-interface ConfirmContextType {
-  // Dit is de magische functie die een Promise (true of false) teruggeeft
-  confirm: (options: ConfirmOptions) => Promise<boolean>;
-}
-
-const ConfirmContext = createContext<ConfirmContextType | undefined>(undefined);
+import { useState, type ReactNode } from "react";
+import { ConfirmContext, type ConfirmOptions } from "./confirm-context";
 
 export function ConfirmProvider({ children }: { children: ReactNode }) {
   const [modalState, setModalState] = useState<{
@@ -98,10 +85,3 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
     </ConfirmContext.Provider>
   );
 }
-
-export const useConfirm = () => {
-  const context = useContext(ConfirmContext);
-  if (!context)
-    throw new Error("useConfirm moet binnen ConfirmProvider gebruikt worden");
-  return context;
-};

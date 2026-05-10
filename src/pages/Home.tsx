@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
+import type { AxiosError } from "axios";
 import { articleService } from "../services/articleService";
 import type { Article } from "../types/article";
 import { Link } from "react-router-dom";
 import client from "../api/client";
+
+interface ErrorResponse {
+  error?: string;
+}
 
 interface Category {
   id: string;
@@ -185,11 +190,12 @@ function NewsletterSignup() {
       });
       setStatus({ type: "success", msg: res.data.message });
       setEmail("");
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const axiosError = err as AxiosError<ErrorResponse>;
       setStatus({
         type: "error",
         msg:
-          err.response?.data?.error ||
+          axiosError.response?.data?.error ||
           "Er is iets misgegaan. Probeer het later opnieuw.",
       });
     } finally {

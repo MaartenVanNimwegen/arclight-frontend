@@ -1,9 +1,51 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
-import { useConfirm } from "../context/ConfirmContext";
+import { useCallback, useEffect, useState } from "react";
+import type { AxiosError } from "axios";
+import { useAuth } from "../context/useAuth";
+import { useConfirm } from "../context/useConfirm";
 import { articleService } from "../services/articleService";
 import client from "../api/client";
-import type { Article } from "../types/article";
+import type { Article, UpsertArticle } from "../types/article";
+
+interface EditableArticle extends Article {
+  categoryId?: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+interface Comment {
+  id: string;
+  text: string;
+  authorName?: string;
+  userName?: string;
+  createdAt: string;
+  articleTitle?: string;
+}
+
+interface DashboardUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+}
+
+type RoleValue = string | number;
+type UserRole = "Admin" | "ContentCreator" | "User";
+
+interface NewsletterErrorResponse {
+  error?: string;
+}
+
+interface ArticleGridProps {
+  articles: EditableArticle[];
+  onEdit: (article?: EditableArticle) => void;
+  onDelete: (id: string) => void;
+  onPublish?: (id: string) => void;
+}
 
 // ==========================================
 // Main component
@@ -74,13 +116,11 @@ function ArticlesTab() {
   const { confirm } = useConfirm();
   const [published, setPublished] = useState<Article[]>([]);
   const [drafts, setDrafts] = useState<Article[]>([]);
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
-    [],
-  );
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<UpsertArticle>({
     title: "",
     summary: "",
     content: "",
@@ -88,29 +128,33 @@ function ArticlesTab() {
     publishNow: false,
   });
 
-  useEffect(() => {
-    loadInitialData();
-  }, []);
-
-  const loadInitialData = async () => {
+  const loadInitialData = useCallback(async () => {
     try {
       const [liveRes, draftRes, catRes] = await Promise.all([
         articleService.getAll(),
         articleService.getDrafts(),
-        client.get("/categories"),
+        client.get<Category[]>("/categories"),
       ]);
       setPublished(liveRes);
       setDrafts(draftRes);
       setCategories(catRes.data);
-      if (catRes.data.length > 0 && !editingId) {
-        setFormData((prev) => ({ ...prev, categoryId: catRes.data[0].id }));
+      if (catRes.data.length > 0) {
+        setFormData((prev) =>
+          prev.categoryId ? prev : { ...prev, categoryId: catRes.data[0].id },
+        );
       }
     } catch (err) {
       console.error(err);
     }
-  };
+  }, []);
 
-  const handleOpenModal = (article?: any) => {
+  useEffect(() => {
+    void (async () => {
+      await loadInitialData();
+    })();
+  }, [loadInitialData]);
+
+  const handleOpenModal = (article?: EditableArticle) => {
     if (article) {
       setEditingId(article.id);
       setFormData({
@@ -142,8 +186,8 @@ function ArticlesTab() {
         await articleService.create(formData);
       }
       setIsModalOpen(false);
-      loadInitialData();
-    } catch (err) {
+      void loadInitialData();
+    } catch {
       alert("Opslaan mislukt. Controleer of alle velden zijn ingevuld.");
     }
   };
@@ -161,7 +205,7 @@ function ArticlesTab() {
       try {
         await articleService.delete(id);
         await loadInitialData();
-      } catch (err) {
+      } catch {
         alert("Fout bij verwijderen.");
       }
     }
@@ -171,7 +215,7 @@ function ArticlesTab() {
     try {
       await articleService.publish(id);
       await loadInitialData();
-    } catch (err) {
+    } catch {
       alert("Publiceren mislukt.");
     }
   };
@@ -305,18 +349,20 @@ function ArticlesTab() {
 // ==========================================
 function CategoriesTab() {
   const { confirm } = useConfirm();
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [newCatName, setNewCatName] = useState("");
   const [newCatDesc, setNewCatDesc] = useState("");
 
-  useEffect(() => {
-    loadCats();
+  const loadCats = useCallback(async () => {
+    const res = await client.get<Category[]>("/categories");
+    setCategories(res.data);
   }, []);
 
-  const loadCats = async () => {
-    const res = await client.get("/categories");
-    setCategories(res.data);
-  };
+  useEffect(() => {
+    void (async () => {
+      await loadCats();
+    })();
+  }, [loadCats]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -327,8 +373,8 @@ function CategoriesTab() {
       });
       setNewCatName("");
       setNewCatDesc("");
-      loadCats();
-    } catch (err) {
+      void loadCats();
+    } catch {
       alert("Fout bij aanmaken");
     }
   };
@@ -346,7 +392,7 @@ function CategoriesTab() {
       try {
         await client.delete(`/categories/${id}`);
         await loadCats();
-      } catch (err) {
+      } catch {
         await confirm({
           title: "Foutmelding",
           message:
@@ -425,24 +471,26 @@ function CategoriesTab() {
 // ==========================================
 function CommentsTab() {
   const { confirm } = useConfirm();
-  const [comments, setComments] = useState<any[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadComments();
-  }, []);
-
-  const loadComments = async () => {
+  const loadComments = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await client.get("/admin/comments");
+      const res = await client.get<Comment[]>("/admin/comments");
       setComments(res.data);
     } catch (err) {
       console.error("Fout bij laden reacties:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void (async () => {
+      await loadComments();
+    })();
+  }, [loadComments]);
 
   const handleDeleteComment = async (commentId: string) => {
     const isConfirmed = await confirm({
@@ -457,18 +505,21 @@ function CommentsTab() {
       try {
         await client.delete(`/admin/comments/${commentId}`);
         await loadComments();
-      } catch (err) {
+      } catch {
         alert("Fout bij verwijderen reactie.");
       }
     }
   };
 
-  const groupedComments = comments.reduce((acc: any, comment: any) => {
+  const groupedComments = comments.reduce<Record<string, Comment[]>>(
+    (acc, comment) => {
     const title = comment.articleTitle || "Algemeen / Onbekend";
     if (!acc[title]) acc[title] = [];
     acc[title].push(comment);
     return acc;
-  }, {});
+    },
+    {},
+  );
 
   if (loading)
     return (
@@ -509,7 +560,7 @@ function CommentsTab() {
           </div>
 
           <div className="divide-y divide-slate-50">
-            {groupedComments[articleTitle].map((c: any) => (
+            {groupedComments[articleTitle].map((c) => (
               <div
                 key={c.id}
                 className="p-6 hover:bg-slate-50/30 transition-colors flex justify-between items-start gap-4"
@@ -598,11 +649,13 @@ function NewsletterTab() {
       });
       setSubject("");
       setBody("");
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const axiosError = err as AxiosError<NewsletterErrorResponse>;
       setStatus({
         type: "error",
         msg:
-          "Fout bij verzenden: " + (err.response?.data?.error || "Serverfout"),
+          "Fout bij verzenden: " +
+          (axiosError.response?.data?.error || "Serverfout"),
       });
     } finally {
       setLoading(false);
@@ -682,43 +735,45 @@ function NewsletterTab() {
 function UsersTab() {
   const { user: currentUser } = useAuth();
   const { confirm } = useConfirm();
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<DashboardUser[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const roles = ["Admin", "ContentCreator", "User"];
+  const roles: UserRole[] = ["Admin", "ContentCreator", "User"];
 
-  const normalizeRole = (roleValue: any) => {
+  const normalizeRole = (roleValue: RoleValue): UserRole | string => {
     if (roleValue === 0 || roleValue === "0") return "User";
     if (roleValue === 1 || roleValue === "1") return "ContentCreator";
     if (roleValue === 2 || roleValue === "2") return "Admin";
-    return roleValue;
+    return String(roleValue);
   };
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await client.get("/user");
+      const res = await client.get<(Omit<DashboardUser, "role"> & { role: RoleValue })[]>("/user");
       setUsers(
-        res.data.map((u: any) => ({ ...u, role: normalizeRole(u.role) })),
+        res.data.map((u) => ({ ...u, role: normalizeRole(u.role) })),
       );
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void (async () => {
+      await loadUsers();
+    })();
+  }, [loadUsers]);
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
       await client.put(`/user/${userId}/${newRole}`);
-      setUsers(
-        users.map((u) => (u.id === userId ? { ...u, role: newRole } : u)),
+      setUsers((prevUsers) =>
+        prevUsers.map((u) => (u.id === userId ? { ...u, role: newRole } : u)),
       );
-    } catch (err) {
+    } catch {
       alert("Kon rol niet aanpassen. Check de server logs.");
     }
   };
@@ -736,7 +791,7 @@ function UsersTab() {
       try {
         await client.delete(`/user/${userId}`);
         await loadUsers();
-      } catch (err) {
+      } catch {
         alert("Fout bij verwijderen gebruiker.");
       }
     }
@@ -847,7 +902,7 @@ function UsersTab() {
 // ==========================================
 // Reusable component: Article Grid (used in Articles Tab for both Drafts and Published)
 // ==========================================
-function ArticleGrid({ articles, onEdit, onDelete, onPublish }: any) {
+function ArticleGrid({ articles, onEdit, onDelete, onPublish }: ArticleGridProps) {
   if (articles.length === 0)
     return (
       <div className="text-slate-400 italic py-10 text-center border-2 border-dashed border-slate-200 rounded-2xl">
@@ -857,7 +912,7 @@ function ArticleGrid({ articles, onEdit, onDelete, onPublish }: any) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {articles.map((a: any) => (
+      {articles.map((a) => (
         <div
           key={a.id}
           className="p-5 bg-white border border-slate-100 shadow-sm rounded-2xl hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between group"
