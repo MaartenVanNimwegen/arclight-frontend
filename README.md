@@ -33,4 +33,4 @@ Dit is de Single Page Application (SPA) voor het Arclight-platform. Het doel is 
 2. Installeer afhankelijkheden:
    `npm install`
 3. Start de applicatie:
-   `npm start`
+   `npm run dev`
